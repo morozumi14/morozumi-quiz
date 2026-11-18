@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172b3a">
+<title>モロズミ二択クイズ</title>
+<style>
+:root{--navy:#172b3a;--blue:#315a70;--cream:#f5f2e9;--paper:#fffefa;--ink:#202b31;--muted:#68777d;--line:#dce2df;--accent:#d88b4a;--good:#287b58;--bad:#b34d45}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;min-height:100vh}
+.wrap{width:min(100% - 28px,680px);margin:0 auto;padding:28px 0 48px}
+header{text-align:center;margin:10px 0 22px}
+.kicker{font-size:.75rem;letter-spacing:.18em;color:var(--blue);font-weight:800}
+h1{font-size:clamp(1.65rem,6vw,2.4rem);margin:8px 0 6px;color:var(--navy);letter-spacing:.04em}
+.subtitle{color:var(--muted);font-size:.92rem;margin:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,5vw,34px);box-shadow:0 12px 35px #172b3a0c}
+.hidden{display:none!important}
+.field-label{display:block;font-weight:700;margin:18px 0 8px}
+input[type=text]{width:100%;border:1px solid #cbd5d2;border-radius:12px;padding:14px 15px;font:inherit;font-size:1rem;background:#fff}
+input:focus{outline:3px solid #315a7030;border-color:var(--blue)}
+button{font:inherit;cursor:pointer}
+.primary{width:100%;border:0;border-radius:13px;background:var(--navy);color:#fff;padding:15px 18px;font-weight:800;margin-top:22px;transition:transform .12s,opacity .12s}
+.primary:active,.choice:active{transform:scale(.985)}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.note{font-size:.82rem;line-height:1.7;color:var(--muted);margin:18px 0 0}
+.progress-row{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.85rem;font-weight:700;margin-bottom:12px}
+.track{height:7px;background:#e8ece8;border-radius:99px;overflow:hidden;margin-bottom:27px}
+.fill{height:100%;width:0;background:var(--accent);transition:width .2s}
+.category{display:inline-block;border-radius:99px;background:#eaf0ee;color:var(--blue);padding:6px 11px;font-size:.76rem;font-weight:800;margin-bottom:14px}
+.question{font-size:clamp(1.2rem,4.8vw,1.65rem);line-height:1.55;font-weight:800;margin:0 0 22px}
+.choices{display:grid;gap:12px}
+.choice{width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:15px;padding:17px 16px;display:flex;gap:13px;align-items:center;font-weight:700;color:var(--ink);transition:border-color .15s,background .15s}
+.choice:hover{border-color:var(--blue);background:#f7faf9}
+.letter{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-weight:800}
+.choice.selected{border-color:var(--blue);background:#edf3f4}
+.choice:disabled{cursor:default}
+.feedback{margin-top:17px;border-radius:13px;padding:13px 15px;font-weight:700;line-height:1.6}
+.feedback.correct{background:#eaf4ee;color:var(--good)}
+.feedback.wrong{background:#faeeec;color:var(--bad)}
+.result-score{text-align:center;padding:8px 0 22px}
+.score{font-size:clamp(3.5rem,15vw,5.2rem);line-height:1;font-weight:900;color:var(--navy);letter-spacing:-.05em}
+.score small{font-size:1rem;color:var(--muted);letter-spacing:0}
+.result-name{font-weight:800;color:var(--blue);margin:8px 0}
+.result-message{font-size:1.1rem;font-weight:800;margin:15px 0 0}
+.result-meta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.88rem}
+.pill{background:#edf1ee;border-radius:99px;padding:7px 12px}
+.review{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}
+.review h3{font-size:1rem;margin:0 0 12px}
+.review-item{padding:12px 0;border-bottom:1px solid #edf0ed;font-size:.9rem;line-height:1.65}
+.review-item strong{display:block;margin-bottom:3px}
+.review-item .ok{color:var(--good);font-weight:800}
+.review-item .ng{color:var(--bad);font-weight:800}
+footer{text-align:center;color:#879397;font-size:.75rem;margin-top:22px}
+@media(min-width:560px){.choices{grid-template-columns:1fr 1fr}.choice{min-height:94px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <div class="kicker">TWO-CHOICE QUIZ</div>
+  <h1>モロズミ二択クイズ</h1>
+  <p class="subtitle">モロズミのこと、どれだけわかる？</p>
+</header>
+
+<section id="start" class="panel">
+  <h2 style="margin:0 0 8px;color:var(--navy)">挑戦者、受付中。</h2>
+  <p style="margin:0;color:var(--muted);line-height:1.7">全30問の二択クイズ！直感を信じて選んでみよう。</p>
+  <label class="field-label" for="nickname">ニックネーム</label>
+  <input id="nickname" type="text" maxlength="16" placeholder="例：ハルジー" autocomplete="nickname">
+  <button id="startBtn" class="primary">クイズに挑戦する</button>
+  <p class="note">※この試作版は、この端末のブラウザ内で遊ぶためのものです。回答やランキングはサーバーに保存されません。</p>
+</section>
+
+<section id="quiz" class="panel hidden" aria-live="polite">
+  <div class="progress-row"><span id="counter">QUESTION 1 / 30</span><span id="percent">3%</span></div>
+  <div class="track"><div id="progress" class="fill"></div></div>
+  <div id="category" class="category">くらし・価値観</div>
+  <h2 id="question" class="question"></h2>
+  <div id="choices" class="choices"></div>
+  <div id="feedback" class="feedback hidden"></div>
+  <button id="nextBtn" class="primary hidden">次の問題へ</button>
+</section>
+
+<section id="result" class="panel hidden">
+  <div class="result-score">
+    <div class="kicker">YOUR RESULT</div>
+    <div class="score"><span id="score">0</span><small> / 30</small></div>
+    <div id="resultName" class="result-name"></div>
+    <div class="result-meta"><span id="rate" class="pill">正答率 0%</span><span id="rank" class="pill">結果発表</span></div>
+    <p id="message" class="result-message"></p>
+  </div>
+  <button id="retryBtn" class="primary">もう一度挑戦する</button>
+  <div class="review">
+    <h3>回答を振り返る</h3>
+    <div id="reviewList"></div>
+  </div>
+  <p class="note">結果をスクリーンショットして友達に送ってみよう！</p>
+</section>
+<footer>MOrozumi QUIZ · prototype 01</footer>
+</main>
+<script>
+const questions = [
+  {c:"お金・買い物",q:"予算オーバーの買い物をしたくなったら？",a:"諦める",b:"後の出費を削って買う",correct:"B"},
+  {c:"趣味・ガレージ",q:"ガレージで遊ぶなら？",a:"バイク",b:"クルマ",correct:"A"},
+  {c:"趣味・道具",q:"新しい機材を選ぶなら？",a:"定番の安心感",b:"癖のある変わり種",correct:"B"},
+  {c:"行動・判断",q:"知らない場所で迷ったら？",a:"地図を見る",b:"とりあえず進む",correct:"A"},
+  {c:"仕事・考え方",q:"仕事で予想外の問題が起きたら？",a:"原因を探る",b:"別の方法を試す",correct:"B"},
+  {c:"好み",q:"髪型の好みは？",a:"ロングヘア",b:"ショートヘア",correct:"A"},
+  {c:"恋愛",q:"理想の恋人関係は？",a:"友達みたいな恋人",b:"恋人らしい恋人",correct:"A"},
+  {c:"恋愛",q:"惹かれるのは？",a:"よく笑う人",b:"よく喋る人",correct:"A"},
+  {c:"ファッション",q:"異性の服装の好みは？",a:"カジュアルな服装",b:"きれいめな服装",correct:"A"},
+  {c:"恋愛",q:"連絡の頻度は？",a:"毎日ちょこちょこ連絡",b:"用事があるときだけ",correct:"A"},
+  {c:"恋愛",q:"恋人の過去の恋愛話は？",a:"聞きたい",b:"聞きたくない",correct:"A"},
+  {c:"恋愛",q:"恋人に「スマホを見せて」と言われたら？",a:"見せる",b:"断る",correct:"A"},
+  {c:"恋愛",q:"恋人の異性の友達は？",a:"気になる",b:"気にならない",correct:"B"},
+  {c:"恋愛",q:"好みの恋人は？",a:"嫉妬深い人",b:"放任主義の人",correct:"B"},
+  {c:"恋愛",q:"惹かれるタイプは？",a:"よく笑う天然タイプ",b:"落ち着いたしっかり者",correct:"A"},
+  {c:"好み",q:"どちら派？",a:"お尻派",b:"おっぱい派",correct:"B"},
+  {c:"好み",q:"体型の好みは？",a:"巨乳",b:"貧乳",correct:"B"},
+  {c:"好み",q:"好みのスタイルは？",a:"ツルツル",b:"自然体",correct:"A"},
+  {c:"日常・恋愛",q:"恋人の前でおならは？",a:"隠し通す",b:"普通にする",correct:"B"},
+  {c:"ファッション",q:"異性の服装は？",a:"露出多め",b:"露出控えめ",correct:"B"},
+  {c:"お金・もしも",q:"宝くじで1億円当たったら？",a:"秘密にして貯金",b:"周囲に話して豪快に奢る",correct:"B"},
+  {c:"お金・もしも",q:"臨時収入10万円が入ったら？",a:"趣味に全額使う",b:"生活を楽にする",correct:"B"},
+  {c:"友人・人付き合い",q:"友人に借金を頼まれたら？",a:"貸す",b:"断る",correct:"A"},
+  {c:"人生観",q:"自分の葬式ではどうしてほしい？",a:"泣いてほしい",b:"笑って思い出話をしてほしい",correct:"A"},
+  {c:"人生観",q:"お金を使うなら？",a:"自分の満足",b:"誰かと楽しむため",correct:"B"},
+  {c:"バンド・音楽",q:"ライブ後に褒められるなら？",a:"演奏",b:"パフォーマンス",correct:"A"},
+  {c:"バンド・音楽",q:"バンド内で意見が割れたら？",a:"多数決",b:"一番こだわりの強い人に任せる",correct:"B"},
+  {c:"バンド・音楽",q:"解散したバンドを再結成するなら？",a:"昔のメンバー",b:"新しいメンバーも加える",correct:"A"},
+  {c:"バンド・音楽",q:"一緒にバンドをやるなら？",a:"技術が高い人",b:"相性がいい人",correct:"B"},
+  {c:"バンド・音楽",q:"ライブ当日は？",a:"早めに会場入りしたい",b:"なるべくギリギリまで自由に過ごしたい",correct:"A"}
+];
+let nickname="匿名", index=0, answers=[];
+const $=id=>document.getElementById(id);
+function show(id){["start","quiz","result"].forEach(x=>$(x).classList.toggle("hidden",x!==id));}
+function begin(){
+  nickname=$("nickname").value.trim().slice(0,16)||"匿名";
+  index=0; answers=[]; show("quiz"); renderQuestion();
+}
+function renderQuestion(){
+  const item=questions[index], n=index+1, pct=Math.round(n/questions.length*100);
+  $("counter").textContent=`QUESTION ${n} / ${questions.length}`;
+  $("percent").textContent=`${pct}%`; $("progress").style.width=`${pct}%`;
+  $("category").textContent=item.c; $("question").textContent=item.q;
+  $("feedback").className="feedback hidden"; $("feedback").textContent="";
+  $("nextBtn").classList.add("hidden"); $("nextBtn").textContent=index===questions.length-1?"結果を見る":"次の問題へ";
+  $("choices").innerHTML="";
+  [["A",item.a],["B",item.b]].forEach(([letter,label])=>{
+    const btn=document.createElement("button"); btn.className="choice";
+    const badge=document.createElement("span"); badge.className="letter"; badge.textContent=letter;
+    const txt=document.createElement("span"); txt.textContent=label;
+    btn.append(badge,txt); btn.addEventListener("click",()=>answer(letter,btn)); $("choices").append(btn);
+  });
+}
+function answer(letter,button){
+  if(answers[index])return;
+  const item=questions[index], correct=letter===item.correct;
+  answers[index]=letter;
+  [...$("choices").children].forEach((b,i)=>{b.disabled=true;if((i===0?"A":"B")===item.correct)b.classList.add("selected");});
+  $("feedback").textContent=correct?"正解！ その調子！":`おしい！ 正解は ${item.correct}：${item[item.correct.toLowerCase()]}`;
+  $("feedback").className=`feedback ${correct?"correct":"wrong"}`;
+  $("nextBtn").classList.remove("hidden");
+}
+function finish(){
+  const score=answers.reduce((sum,a,i)=>sum+(a===questions[i].correct?1:0),0);
+  const rate=Math.round(score/questions.length*100);
+  $("score").textContent=score; $("resultName").textContent=`${nickname} さんの結果`;
+  $("rate").textContent=`正答率 ${rate}%`;
+  $("rank").textContent=score>=27?"モロズミ博士":score>=22?"かなりの理解者":score>=15?"なかなか知ってる":score>=8?"まだまだこれから":"初対面かな？";
+  $("message").textContent=score===30?"完全制覇！！本人もびっくり。":score>=24?"すごい！かなりモロズミを理解している！":score>=15?"いい線いってる！もう一歩！":"これはモロズミ研究が必要だ……！";
+  $("reviewList").innerHTML="";
+  questions.forEach((q,i)=>{
+    const ok=answers[i]===q.correct, chosen=answers[i];
+    const div=document.createElement("div"); div.className="review-item";
+    const title=document.createElement("strong"); title.textContent=`Q${i+1}. ${q.q}`;
+    const result=document.createElement("span"); result.className=ok?"ok":"ng";
+    result.textContent=ok?`正解：${q.correct} ${q[q.correct.toLowerCase()]}`:`あなた：${chosen} ${q[chosen.toLowerCase()]} ／ 正解：${q.correct} ${q[q.correct.toLowerCase()]}`;
+    div.append(title,result); $("reviewList").append(div);
+  });
+  show("result"); window.scrollTo({top:0,behavior:"smooth"});
+}
+$("startBtn").addEventListener("click",begin);
+$("nickname").addEventListener("keydown",e=>{if(e.key==="Enter")begin();});
+$("nextBtn").addEventListener("click",()=>{if(index===questions.length-1)finish();else{index++;renderQuestion();}});
+$("retryBtn").addEventListener("click",()=>{index=0;answers=[];show("start");window.scrollTo({top:0,behavior:"smooth"});});
+</script>
+</body>
+</html>
